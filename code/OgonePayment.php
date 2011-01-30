@@ -28,10 +28,6 @@ class OgonePayment extends Payment{
 
 		return new Payment_Failure($this->Message);
 	}
-
-	/**
-	 * see https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_r_DoExpressCheckoutPayment
-	 */
 	function confirmPayment(){
 
 
@@ -41,14 +37,14 @@ class OgonePayment extends Payment{
 
 
 	function getPaymentFormFields() {
-		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by PayPal"/>';
-		$privacyLink = '<a href="' . self::$privacy_link . '" target="_blank" title="Read PayPal\'s privacy policy">' . $logo . '</a><br/>';
+		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone"/>';
+		$privacyLink = '<a href="' . self::$privacy_link . '" target="_blank" title="Read Ogone\'s privacy policy">' . $logo . '</a><br/>';
 		return new FieldSet(
-			new LiteralField('PayPalInfo', $privacyLink),
+			new LiteralField('OgoneInfo', $privacyLink),
 			new LiteralField(
-				'PayPalPaymentsList',
+				'OgonePaymentsList',
 
-				//TODO: these methods aren't available in all countries
+				//TODO: set what methods are avaialble
 				'<img src="payment/images/payments/methods/visa.jpg" alt="Visa"/>' .
 				'<img src="payment/images/payments/methods/mastercard.jpg" alt="MasterCard"/>' .
 				'<img src="payment/images/payments/methods/american-express.gif" alt="American Express"/>' .
@@ -62,7 +58,7 @@ class OgonePayment extends Payment{
 
 }
 
-class PaypalExpressCheckoutaPayment_Handler extends Controller{
+class OgonePayment_Handler extends Controller{
 
 	protected $payment = null; //only need to get this once
 
