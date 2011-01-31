@@ -97,6 +97,8 @@ class OgonePayment extends Payment {
 		$fields = '';
 		$order = $this->Order();
 		$member = $order->Member();
+		$this->Amount = $order->Total();
+		$this->write();
 
 		// 2) Main Settings
 
@@ -116,7 +118,7 @@ class OgonePayment extends Payment {
 
 		// 3) Redirection Informations
 		
-		$redirections = array('accept', 'decline', 'exception', 'cancel');
+		$redirections = array('accept', 'decline');
 		foreach($redirections as $redirection) {
 			$inputs["{$redirection}url"] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
@@ -179,7 +181,7 @@ class OgonePayment_Handler extends Controller {
 	static function redirect_link($action, $order, $payment) {
 		return self::$URLSegment . "/$action?order=$order->ID&payment=$payment->ID";
 	}
-
+	
 	protected $order, $payment;
 
 	/*
@@ -216,33 +218,43 @@ class OgonePayment_Handler extends Controller {
 		if(isset($_REQUEST['payment']) && $paymentID = $_REQUEST['payment']) {
 			$this->payment = DataObject::get_by_id('OgonePayment', $paymentID);
 		}
-		var_dump($_REQUEST);
-		die;
-		//'Incomplete,Success,Failure,Pending','Incomplete'
+		if(! $this->order) $errors[] = 'Order';
+		if(! $this->payment) $errors[] = 'Payment';
+		if(isset($errors)) {
+			echo '<p>' . implode(' and ', $errors) . ' not found</p>';
+			die;
+		}
 	}
-
-	/**
-	 * Manages the 'return' and 'cancel' Ogone replies
-	 */
-	function complete() {
-		if(isset($_REQUEST['custom']) && $custom = $_REQUEST['custom']) {
-			$params = explode('-', $custom);
-			if(count($params) == 2) {
-				if($payment = DataObject::get_by_id('OgonePayment', $params[0])) {
-					if($payment->AuthorisationCode == $params[1]) {
-						if(isset($_REQUEST['payment_status']) && $_REQUEST['payment_status'] == 'Completed') {
-							$payment->Status = 'Success';
-							$payment->TxnRef = $_REQUEST['txn_id'];
-						}
-						else {
-							$payment->Status = 'Failure';
-						}
-
-						$payment->write();
-						$payment->redirectToOrder();
-					}
-				}
+	
+	function accept() {
+		$status = $_REQUEST['STATUS'];
+		switch($status) {
+			case 5 :
+			case 9 : {
+				$this->payment->Status = 'Success';
+				break;
+			}
+			case 51 :
+			case 91 : {
+				$this->payment->Status = 'Pending';
+				break;
+			}
+			case 52 :
+			case 92 : {
+				$this->payment->Status = 'Failure';
+				break;
 			}
 		}
+		$this->payment->write();
+		$this->payment->redirectToOrder();
+	}
+	
+	function decline() {
+		$status = $_REQUEST['STATUS'];
+		if($status <= 2) {
+			$this->payment->Status = 'Failure';
+			$this->payment->write();
+		}
+		$this->payment->redirectToOrder();
 	}
 }
