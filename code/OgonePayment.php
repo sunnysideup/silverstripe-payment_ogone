@@ -115,12 +115,12 @@ class OgonePayment extends Payment {
 		if($member->hasMethod('getPhoneNumber')) $inputs['OWNERTELNO'] = $member->getPhoneNumber();
 
 		// 3) Redirection Informations
-		/*
+		
 		$redirections = array('accept', 'decline', 'exception', 'cancel');
 		foreach($redirections as $redirection) {
 			$inputs["{$redirection}url"] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
-		*/
+		
 		// 4) Ogone Pages Style Optional Informations
 
 		if(self::$page_title) $inputs['TITLE'] = self::$page_title;
@@ -141,7 +141,7 @@ class OgonePayment extends Payment {
 			foreach($shaInputs as $input => $value) {
 				if($value && $value != '') $joinInputs[] = "$input=$value";
 			}
-			$sha = implode(self::$sha_passphrase, $joinInputs).self::$sha_passphrase;
+			$sha = implode(self::$sha_passphrase, $joinInputs) . self::$sha_passphrase;
 			$inputs['SHASIGN'] = sha1($sha);
 		}
 
@@ -149,7 +149,7 @@ class OgonePayment extends Payment {
 
 		foreach($inputs as $name => $value) {
 			$ATT_value = Convert::raw2att($value);
-			$fields .= "<input type=\"hidden\" name=\"$name\" value=\"$ATT_value\" />";
+			$fields .= "<input type=\"hidden\" name=\"$name\" value=\"$ATT_value\"/>";
 		}
 
 		return <<<HTML
