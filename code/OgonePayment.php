@@ -60,16 +60,7 @@ class OgonePayment extends Payment {
 		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone "/>';
 		$privacyLink = '<a href="' . self::$privacy_link . '" target="_blank" title="Read Ogone\'s privacy policy">' . $logo . '</a><br/>';
 		return new FieldSet(
-			new LiteralField('OgoneInfo', $privacyLink),
-			new DropdownField(
-				'OgoneMethod',
-				'',
-				array(
-					'CC' => 'Credit Card',
-					'ID' => 'Ideal',
-					'PP' => 'Paypal'
-				)
-			)
+			new LiteralField('OgoneInfo', $privacyLink)
 		);
 	}
 
