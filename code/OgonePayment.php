@@ -97,7 +97,7 @@ class OgonePayment extends Payment {
 		$fields = '';
 		$order = $this->Order();
 		$member = $order->Member();
-		$this->Amount = $order->Total();
+		$this->Amount = $order->Total() + 0;
 		$this->write();
 
 		// 2) Main Settings
