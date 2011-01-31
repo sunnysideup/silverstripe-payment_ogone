@@ -137,14 +137,11 @@ class OgonePayment extends Payment {
 
 		if(self::$sha_passphrase) {
 			$shaInputs = array_change_key_case($inputs, CASE_UPPER);
-			var_dump($shaInputs);
 			ksort($shaInputs);
-			echo '<br/><br/>';var_dump($shaInputs);
 			foreach($shaInputs as $input => $value) {
 				if($value && $value != '') $joinInputs[] = "$input=$value";
 			}
-			echo '<br/><br/>';var_dump($joinInputs);
-			$sha = implode(self::$sha_passphrase, $joinInputs);
+			$sha = implode(self::$sha_passphrase, $joinInputs).self::$sha_passphrase;
 			$inputs['SHASIGN'] = sha1($sha);
 		}
 
@@ -157,13 +154,15 @@ class OgonePayment extends Payment {
 
 		return <<<HTML
 			<form id="PaymentForm" method="post" action="$url">
-				$fields
-				<input type="submit" value="Submit" />
+				<div>
+					$fields
+					<input type="submit" value="Submit" />
+				</div>
 			</form>
 			<script type="text/javascript">
 				jQuery(document).ready(function() {
-					jQuery("input[type='submit']").hide();
-					//jQuery('#PaymentForm').submit();
+					//jQuery("input[type='submit']").hide();
+					jQuery('#PaymentForm').submit();
 				});
 			</script>
 HTML;
