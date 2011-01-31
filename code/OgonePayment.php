@@ -190,6 +190,8 @@ class OgonePayment_Handler extends Controller {
 		if(isset($_REQUEST['payment']) && $paymentID = $_REQUEST['payment']) {
 			$this->payment = DataObject::get_by_id('OgonePayment', $paymentID);
 		}
+		var_dump($_REQUEST);
+		die;
 		//'Incomplete,Success,Failure,Pending','Incomplete'
 	}
 
