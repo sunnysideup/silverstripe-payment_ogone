@@ -240,7 +240,7 @@ class OgonePayment_Handler extends Controller {
 	
 	function decline() {
 		$status = $_REQUEST['STATUS'];
-		if($status <= 2) {
+		if($status <= 2 || $status == 93) {
 			$this->payment->Status = 'Failure';
 			$this->payment->write();
 		}
