@@ -182,6 +182,32 @@ class OgonePayment_Handler extends Controller {
 
 	protected $order, $payment;
 
+	/*
+	 * http://staging.shop.avelon.me.xplainhosting.com/ogone/accept?
+	 * order=140&
+	 * payment=19&
+	 * orderID=140&
+	 * currency=EUR&
+	 * amount=149&
+	 * PM=CreditCard&
+	 * ACCEPTANCE=test123&
+	 * STATUS=9&
+	 * CARDNO=XXXXXXXXXXXX1111&
+	 * ED=0921&
+	 * CN=Default+Admin&
+	 * TRXDATE=01%2F31%2F11&
+	 * PAYID=9296689&
+	 * NCERROR=0&
+	 * BRAND=VISA&
+	 * IPCTY=NZ&
+	 * CCCTY=US&
+	 * ECI=7&
+	 * CVCCheck=NO&
+	 * AAVCheck=NO&
+	 * VC=NO&
+	 * IP=125.237.65.47&
+	 * SHASIGN=E62DF983CDD8F2AE90CA566FDB1FF99A255969B7
+	 */
 	function init() {
 		parent::init();
 		if(isset($_REQUEST['order']) && $orderID = $_REQUEST['order']) {
