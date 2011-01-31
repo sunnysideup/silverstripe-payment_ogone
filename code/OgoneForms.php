@@ -4,7 +4,7 @@ class OgoneForms extends ViewableData {
 
 	protected static $standard_array = array();
 		static function add_to_standard_array($key, $value) {self::$standard_array[$key] = $value;}
-		static function remove_from_standard_array($key) {unset(self::$standard_array[$key])}
+		static function remove_from_standard_array($key) {unset(self::$standard_array[$key]);}
 		static function set_standard_array($a) {self::$standard_array = $a;}
 		static function get_standard_array() {return self::$standard_array;}
 
@@ -14,7 +14,7 @@ class OgoneForms extends ViewableData {
 		$arrayOfValues = array_merge($arrayOfValues, self::get_standard_array());
 		if(is_array($arrayOfValues) && count($arrayOfValues)) {
 			foreach($arrayOfValues as $key => $value) {
-				$v . ='<input name="'.$key.'" value="'.Convert::raw2sql($value).'" type="hidden" />'
+				$v .='<input name="'.$key.'" value="'.Convert::raw2sql($value).'" type="hidden" />';
 			}
 		}
 		return '
@@ -66,10 +66,10 @@ class OgoneForms extends ViewableData {
 			"USERID",
 			"CreditCode",
 			// --------- OPTIONAL
-			"PM"// 			<option>CreditCard</option>			<option>iDEAL</option>			<option>ING HomePay</option>			<option>KBC Online</option>			<option>CBC Online</option> 			<option>DEXIA NetBanking</option>
+			"PM",// 			<option>CreditCard</option>			<option>iDEAL</option>			<option>ING HomePay</option>			<option>KBC Online</option>			<option>CBC Online</option> 			<option>DEXIA NetBanking</option>
 			"BRAND",
 			"addrMatch",
-			"CN",:
+			"CN",
 			"Ecom_BillTo_Postal_Name_First",
 			"Ecom_BillTo_Postal_Name_Last",
 			"EMAIL",
