@@ -1,125 +1,221 @@
 <?php
 
+/**
+ */
+class OgonePayment extends Payment {
 
-class OgonePayment extends Payment{
+	// Ogone Information
 
-	static $db = array(
-		'Token' => 'Varchar(30)',
-		'PayerID' => 'Varchar(30)',
-		'TransactionID' => 'Varchar(30)'
-	);
+	protected static $privacy_link = 'http://www.ogone.com/en/About%20Ogone/Privacy%20Policy.aspx';
+	protected static $logo = 'mysite/images/ogone.gif';
 
+	// URLs
 
-	//main processing function
-	function processPayment($data, $form) {
+	protected static $url = 'https://secure.ogone.com/ncol/prod/orderstandard.asp';
+	protected static $test_url = 'https://secure.ogone.com/ncol/test/orderstandard.asp';
 
+	// Test Mode
 
-		$paymenturl = "";
+	protected static $test_mode = false;
+	static function set_test_mode($test_mode) {self::$test_mode = $test_mode;}
 
-		$this->Status = "Pending";
-		$this->write();
+	// Payment Informations
 
-		Director::redirect($paymenturl); //redirect to payment gateway
-		return new Payment_Processing();
+	protected static $account_pspid;
+	static function set_account_pspid($account_pspid) {self::$account_pspid = $account_pspid;}
 
-		$this->Message = "Error";
-		$this->Status = 'Failure';
-		$this->write();
+	protected static $sha_passphrase;
+	static function set_sha_passphrase($sha_passphrase) {self::$sha_passphrase = $sha_passphrase;}
 
-		return new Payment_Failure($this->Message);
-	}
-	function confirmPayment(){
+	// Ogone Pages Style Optional Informations
 
+	protected static $page_title;
+	static function set_page_title($page_title) {self::$page_title = $page_title;}
 
-		$this->write();
+	protected static $back_color;
+	static function set_back_color($back_color) {self::$back_color = $back_color;}
 
-	}
+	protected static $text_color;
+	static function set_text_color($text_color) {self::$text_color = $text_color;}
 
+	protected static $table_back_color;
+	static function set_table_back_color($table_back_color) {self::$table_back_color = $table_back_color;}
+
+	protected static $table_text_color;
+	static function set_table_text_color($table_text_color) {self::$table_text_color = $table_text_color;}
+
+	protected static $button_back_color;
+	static function set_button_back_color($button_back_color) {self::$button_back_color = $button_back_color;}
+
+	protected static $button_text_color;
+	static function set_button_text_color($button_text_color) {self::$button_text_color = $button_text_color;}
+
+	protected static $font_type;
+	static function set_font_type($font_type) {self::$font_type = $font_type;}
+
+	protected static $image_url;
+	static function set_image_url($image_url) {self::$image_url = $image_url;}
 
 	function getPaymentFormFields() {
-		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone"/>';
+		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone "/>';
 		$privacyLink = '<a href="' . self::$privacy_link . '" target="_blank" title="Read Ogone\'s privacy policy">' . $logo . '</a><br/>';
 		return new FieldSet(
 			new LiteralField('OgoneInfo', $privacyLink),
-			new LiteralField(
-				'OgonePaymentsList',
-
-				//TODO: set what methods are avaialble
-				'<img src="payment/images/payments/methods/visa.jpg" alt="Visa"/>' .
-				'<img src="payment/images/payments/methods/mastercard.jpg" alt="MasterCard"/>' .
-				'<img src="payment/images/payments/methods/american-express.gif" alt="American Express"/>' .
-				'<img src="payment/images/payments/methods/discover.jpg" alt="Discover"/>' .
-				'<img src="payment/images/payments/methods/paypal.jpg" alt="PayPal"/>'
+			new DropdownField(
+				'OgoneMethod',
+				'',
+				array(
+					'CC' => 'Credit Card',
+					'ID' => 'Ideal',
+					'PP' => 'Paypal'
+				)
 			)
 		);
 	}
 
 	function getPaymentFormRequirements() {return null;}
 
+	function processPayment($data, $form) {
+		$page = new Page();
+
+		$page->Title = 'Redirection to Ogone...';
+		$page->Logo = '<img src="' . self::$logo . '" alt="Payments powered by Ogone"/>';
+		$page->Form = $this->OgoneForm();
+
+		$controller = new Page_Controller($page);
+
+		$form = $controller->renderWith('PaymentProcessingPage');
+
+		return new Payment_Processing($form);
+	}
+
+	function OgoneForm() {
+		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+
+		// 1) Main Informations
+
+		$fields = '';
+		$order = $this->Order();
+		$member = $order->Member();
+
+		// 2) Main Settings
+
+		$url = self::$test_mode ? self::$test_url : self::$url;
+		$inputs['PSPID'] = self::$account_pspid;
+		$inputs['ORDERID'] = $order->ID;
+		$inputs['AMOUNT'] = $order->Total() * 100;
+		$inputs['CURRENCY'] = self::$site_currency;
+		$inputs['LANGUAGE'] = i18n::get_locale();
+		$inputs['CN'] = $member->getName();
+		$inputs['EMAIL'] = $member->Email;
+		$inputs['OWNERADDRESS'] = $member->Address . ($member->AddressLine2 ? " $member->AddressLine2" : '');
+		$inputs['OWNERZIP'] = $member->PostalCode;
+		$inputs['OWNERTOWN'] = $member->City;
+		$inputs['OWNERCTY'] = $member->Country;
+		if($member->hasMethod('getPhoneNumber')) $inputs['OWNERTELNO'] = $member->getPhoneNumber();
+
+		// 3) Redirection Informations
+		/*
+		$redirections = array('accept', 'decline', 'exception', 'cancel');
+		foreach($redirections as $redirection) {
+			$inputs["{$redirection}url"] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
+		}
+		*/
+		// 4) Ogone Pages Style Optional Informations
+
+		if(self::$page_title) $inputs['TITLE'] = self::$page_title;
+		if(self::$back_color) $inputs['BGCOLOR'] = self::$back_color;
+		if(self::$text_color) $inputs['TXTCOLOR'] = self::$text_color;
+		if(self::$table_back_color) $inputs['TBLBGCOLOR'] = self::$table_back_color;
+		if(self::$table_text_color) $inputs['TBLTXTCOLOR'] = self::$table_text_color;
+		if(self::$button_back_color) $inputs['BUTTONBGCOLOR'] = self::$button_back_color;
+		if(self::$button_text_color) $inputs['BUTTONTXTCOLOR'] = self::$button_text_color;
+		if(self::$font_type) $inputs['FONTTYPE'] = self::$font_type;
+		if(self::$image_url) $inputs['LOGO'] = urlencode(self::$image_url);
+
+		// 5) Security Settings
+
+		if(self::$sha_passphrase) {
+			$shaInputs = array_change_key_case($inputs, CASE_UPPER);
+			var_dump($shaInputs);
+			ksort($shaInputs);
+			echo '<br/><br/>';var_dump($shaInputs);
+			foreach($shaInputs as $input => $value) {
+				if($value && $value != '') $joinInputs[] = "$input=$value";
+			}
+			echo '<br/><br/>';var_dump($joinInputs);
+			$sha = implode(self::$sha_passphrase, $joinInputs);
+			$inputs['SHASIGN'] = sha1($sha);
+		}
+
+		// 6) Form Creation
+
+		foreach($inputs as $name => $value) {
+			$ATT_value = Convert::raw2att($value);
+			$fields .= "<input type=\"hidden\" name=\"$name\" value=\"$ATT_value\" />";
+		}
+
+		return <<<HTML
+			<form id="PaymentForm" method="post" action="$url">
+				$fields
+				<input type="submit" value="Submit" />
+			</form>
+			<script type="text/javascript">
+				jQuery(document).ready(function() {
+					jQuery("input[type='submit']").hide();
+					//jQuery('#PaymentForm').submit();
+				});
+			</script>
+HTML;
+	}
 }
 
-class OgonePayment_Handler extends Controller{
+/**
+ * Handler for responses from the Ogone site
+ */
+class OgonePayment_Handler extends Controller {
 
-	protected $payment = null; //only need to get this once
+	static $URLSegment = 'ogone';
 
-	static $allowed_actions = array(
-		'confirm',
-		'cancel'
-	);
-
-	function payment(){
-		if($this->payment){
-			return $this->payment;
-		}
-
+	static function redirect_link($action, $order, $payment) {
+		return self::$URLSegment . "/$action?order=$order->ID&payment=$payment->ID";
 	}
 
-	function confirm($request){
+	protected $order, $payment;
 
-		//TODO: pretend the user confirmed, and skip straight to results. (check that this is allowed)
-		//TODO: get updated shipping details from paypal??
+	function init() {
+		parent::init();
+		if(isset($_REQUEST['order']) && $orderID = $_REQUEST['order']) {
+			$this->order = DataObject::get_by_id('Order', $orderID);
+		}
+		if(isset($_REQUEST['payment']) && $paymentID = $_REQUEST['payment']) {
+			$this->payment = DataObject::get_by_id('OgonePayment', $paymentID);
+		}
+		//'Incomplete,Success,Failure,Pending','Incomplete'
+	}
 
-		if($payment = $this->payment()){
+	/**
+	 * Manages the 'return' and 'cancel' Ogone replies
+	 */
+	function complete() {
+		if(isset($_REQUEST['custom']) && $custom = $_REQUEST['custom']) {
+			$params = explode('-', $custom);
+			if(count($params) == 2) {
+				if($payment = DataObject::get_by_id('OgonePayment', $params[0])) {
+					if($payment->AuthorisationCode == $params[1]) {
+						if(isset($_REQUEST['payment_status']) && $_REQUEST['payment_status'] == 'Completed') {
+							$payment->Status = 'Success';
+							$payment->TxnRef = $_REQUEST['txn_id'];
+						}
+						else {
+							$payment->Status = 'Failure';
+						}
 
-			if($pid = Controller::getRequest()->getVar('PayerID')){
-				$payment->PayerID = $pid;
-				$payment->write();
-
-				$payment->confirmPayment();
+						$payment->write();
+						$payment->redirectToOrder();
+					}
+				}
 			}
-
-		}else{
-			//something went wrong?	..perhaps trying to pay for a payment that has already been processed
 		}
-
-		$this->doRedirect();
-		return;
-	}
-
-	function cancel($request){
-
-		if($payment = $this->payment()){
-
-			//TODO: do API call to gather further information
-
-			$payment->Status = "Failure";
-			$payment->Message = "User cancelled";
-			$payment->write();
-		}
-
-		$this->doRedirect();
-		return;
-	}
-
-	function doRedirect(){
-
-		$payment = $this->payment();
-		if($payment && $obj = $payment->PaidObject()){
-			Director::redirect($obj->Link());
-			return;
-		}
-
-		Director::redirect(Director::absoluteURL('home',true)); //TODO: make this customisable in Payment_Controllers
-		return;
 	}
 }
