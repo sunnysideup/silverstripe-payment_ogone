@@ -321,8 +321,12 @@ class OgonePayment_Handler extends Controller {
 		if(isset($_REQUEST["SHASIGN"])) {
 			$presentSha = $_REQUEST["SHASIGN"];
 			ksort($_REQUEST);
+			$shouldBeShaInput = '';
 			foreach($_REQUEST as $key => $value) {
-				$shouldBeShaInput = strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
+				$key = strtoupper($key);
+				if(in_array($key, $this->shaOutVariables())) {
+					$shouldBeShaInput .= strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
+				}
 			}
 			$shouldBeSha = sha1($shouldBeShaInput);
 			if($presentSha == $shouldBeSha) {
@@ -346,6 +350,16 @@ class OgonePayment_Handler extends Controller {
 	function test() {
 		return "ok";
 	}
+
+	function shaOutVariables() {
+		return array(
+			'AAVADDRESS', 'AAVCHECK', 'AAVZIP', 'ACCEPTANCE', 'ALIAS', 'AMOUNT', 'BIN', 'BRAND', 'CARDNO', 'CCCTY', 'CN', 'COMPLUS', 'CREATION_STATUS', 'CURRENCY',
+			'CVCCHECK', 'DCC_COMMPERCENTAGE', 'DCC_CONVAMOUNT', 'DCC_CONVCCY', 'DCC_EXCHRATE', 'DCC_EXCHRATESOURCE', 'DCC_EXCHRATETS', 'DCC_INDICATOR', 'DCC_MARGINPERCENTAGE',
+			'DCC_VALIDHOURS', 'DIGESTCARDNO', 'ECI', 'ED', 'ENCCARDNO', 'IP', 'IPCTY', 'NBREMAILUSAGE', 'NBRIPUSAGE', 'NBRIPUSAGE_ALLTX', 'NBRUSAGE', 'NCERROR', 'ORDERID',
+			'PARAMPLUS', 'PAYID', 'PM', 'SCO_CATEGORY', 'SCORING', 'STATUS', 'SUBSCRIPTION_ID', 'TRXDATE', 'VC'
+		}
+	}
+
 
 }
 
