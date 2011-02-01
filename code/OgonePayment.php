@@ -335,7 +335,7 @@ class OgonePayment_Handler extends Controller {
 				if(in_array($key, $this->shaOutVariables())) {
 					echo $key.$value;
 					if($key != "SHASIGN") {
-						if(isset($value) && $value !== null && $value !== '') {
+						if($value != null && $value != '') {
 							$shaInput .= $key.'='.$value.OgonePayment::get_sha_passphrase();
 							$shaDebugList .= '<br />'.$key.' = '.$value;
 						}
