@@ -330,7 +330,7 @@ class OgonePayment_Handler extends Controller {
 			$shaInput = '';
 			foreach($_REQUEST as $key => $value) {
 				$key = strtoupper($key);
-				$value = urldecode($value);
+				$value = ($value);
 				if(in_array($key, $this->shaOutVariables())) {
 					if($key != "SHASIGN") {
 						if(isset($value) && $value !== null && $value != 0) {
