@@ -339,7 +339,6 @@ class OgonePayment_Handler extends Controller {
 					}
 				}
 			}
-			die($shaInput);
 			$calculatedSha = sha1($shaInput);
 			if($presentedSha == $calculatedSha) {
 				return true;
