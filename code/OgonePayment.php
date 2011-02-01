@@ -206,6 +206,7 @@ class OgonePayment_Handler extends Controller {
 	}
 
 	protected $order, $payment;
+	protected $hasBeenRedirect = false;
 
 	/*
 	 * http://staging.shop.avelon.me.xplainhosting.com/ogone/accept?
@@ -296,20 +297,24 @@ class OgonePayment_Handler extends Controller {
 			$this->payment->write();
 		}
 		*/
-		return $this->addErrorMessageAndRedirect(_t("OgonePayment.PAYMENTDECLINED", "Payment declined."));
+		return $this->addErrorMessage(_t("OgonePayment.PAYMENTDECLINED", "Payment declined."));
+		$this->payment->redirectToOrder();
 	}
 
 	function exception() {
-		return $this->addErrorMessageAndRedirect(_t("OgonePayment.PAYMENTERROR", "Payment error."));
+		return $this->addErrorMessage(_t("OgonePayment.PAYMENTERROR", "Payment error."));
+		$this->payment->redirectToOrder();
 	}
 
 
 	function cancel() {
-		return $this->addErrorMessageAndRedirect(_t("OgonePayment.PAYMENTCANCELLED", "Payment cancelled by customer."));
+		return $this->addErrorMessage(_t("OgonePayment.PAYMENTCANCELLED", "Payment cancelled by customer."));
+		$this->payment->redirectToOrder();
 	}
 
 	function back() {
-		return $this->cancel();
+		$this->cancel();
+		$this->payment->redirectToOrder();
 	}
 
 	protected function checkShaOut() {
@@ -327,16 +332,15 @@ class OgonePayment_Handler extends Controller {
 				return true;
 			}
 		}
-		$this->addErrorMessageAndRedirect(_t("OgonePayment.SECURITYERROR", "Security Error"));
+		$this->addErrorMessage(_t("OgonePayment.SECURITYERROR", "Security Error"));
 	}
 
-	protected function addErrorMessageAndRedirect($msg) {
+	protected function addErrorMessage($msg) {
 		if($this->payment instanceOf Payment) {
 			$this->payment->Status = "Failure";
 			$this->payment->ExceptionError = $msg;
 			$this->payment->Message = $msg;
 			$this->payment->write();
-			$this->payment->redirectToOrder();
 			return;
 		}
 		return array();
