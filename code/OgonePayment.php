@@ -273,10 +273,13 @@ class OgonePayment_Handler extends Controller {
 
 	function accept() {
 		$status = $_REQUEST['STATUS'];
-		//CHECK for SHA-OUT!!!
 		switch($status) {
 			case 5 :
 			case 9 : {
+				if(!isset($_REQUEST["amount"]) && isset($_REQUEST["AMOUNT"])) { $_REQUEST["amount"] = $_REQUEST["AMOUNT"];}
+				if(!isset($_REQUEST["amount"]) && isset($_REQUEST["Amount"])) { $_REQUEST["amount"] = $_REQUEST["Amount"];}
+				if(!isset($_REQUEST["amount"])) { $_REQUEST["amount"] = 0;}
+				$this->payment->Amount = DBField::create('Currency',$_REQUEST["amount"]);
 				$this->payment->Status = 'Success';
 				break;
 			}
@@ -291,6 +294,7 @@ class OgonePayment_Handler extends Controller {
 				break;
 			}
 		}
+		$this->payment->write();
 		$this->checkShaOut();
 		$this->payment->redirectToOrder();
 	}
