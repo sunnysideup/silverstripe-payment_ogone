@@ -58,7 +58,7 @@ class OgonePayment extends Payment {
 
 	function getPaymentFormFields() {
 		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone "/>';
-		$privacyLink = '<a href="' . self::$privacy_link . '" target="_blank" title="Read Ogone\'s privacy policy">' . $logo . '</a><br/>';
+		$privacyLink = '<div class="middleColumn"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . $logo . '</a></div>';
 		return new FieldSet(
 			new LiteralField('OgoneInfo', $privacyLink)
 		);
@@ -106,12 +106,12 @@ class OgonePayment extends Payment {
 		if($member->hasMethod('getPhoneNumber')) $inputs['OWNERTELNO'] = $member->getPhoneNumber();
 
 		// 3) Redirection Informations
-		
+
 		$redirections = array('accept', 'decline');
 		foreach($redirections as $redirection) {
 			$inputs["{$redirection}url"] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
-		
+
 		// 4) Ogone Pages Style Optional Informations
 
 		if(self::$page_title) $inputs['TITLE'] = self::$page_title;
@@ -170,7 +170,7 @@ class OgonePayment_Handler extends Controller {
 	static function redirect_link($action, $order, $payment) {
 		return self::$URLSegment . "/$action?order=$order->ID&payment=$payment->ID";
 	}
-	
+
 	protected $order, $payment;
 
 	/*
@@ -214,7 +214,7 @@ class OgonePayment_Handler extends Controller {
 			die;
 		}
 	}
-	
+
 	function accept() {
 		$status = $_REQUEST['STATUS'];
 		switch($status) {
@@ -237,7 +237,7 @@ class OgonePayment_Handler extends Controller {
 		$this->payment->write();
 		$this->payment->redirectToOrder();
 	}
-	
+
 	function decline() {
 		$status = $_REQUEST['STATUS'];
 		if($status <= 2 || $status == 93) {
