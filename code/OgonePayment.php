@@ -232,7 +232,7 @@ class OgonePayment_Handler extends Controller {
 		static function  set_url_segment($v){self::$url_segment = $v;}
 
 	static function redirect_link($action, $order, $payment) {
-		return self::$url_segment. "/".$action."/".$order->ID."/".$payment->ID."/";
+		return self::$url_segment. "/".strtolower($action)."/".$order->ID."/".$payment->ID."/";
 	}
 
 	protected $order, $payment;
@@ -328,7 +328,7 @@ class OgonePayment_Handler extends Controller {
 			$shaInput = '';
 			foreach($_REQUEST as $key => $value) {
 				$key = strtoupper($key);
-				$value = urldecode($value);
+				$value = $value;
 				if(in_array($key, $this->shaOutVariables())) {
 					if($key != "SHASIGN") {
 						$shaInput .= strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
