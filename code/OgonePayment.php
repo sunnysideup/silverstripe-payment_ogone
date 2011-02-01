@@ -193,7 +193,7 @@ class OgonePayment extends Payment {
 			$shaInputs = array_change_key_case($inputs, CASE_UPPER);
 			ksort($shaInputs);
 			foreach($shaInputs as $input => $value) {
-				if(isset($value) && $value !== null && $value != 0) {
+				if(isset($value) && $value !== null && $value !== '') {
 					$joinInputs[] = strtoupper($input)."=$value";
 				}
 			}
@@ -334,14 +334,14 @@ class OgonePayment_Handler extends Controller {
 				$shaDebugList = '';
 				if(in_array($key, $this->shaOutVariables())) {
 					if($key != "SHASIGN") {
-						if(isset($value) && $value !== null && $value != 0) {
-							$shaInput .= strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
+						if(isset($value) && $value !== null && $value !== '') {
+							$shaInput .= $key.'='.$value.OgonePayment::get_sha_passphrase();
 							$shaDebugList .= '<br />'.$key.' = '.$value;
 						}
 					}
 				}
 			}
-			die($shaDebugList);
+			die("list :".$shaDebugList);
 			$calculatedSha = sha1($shaInput);
 			if($presentedSha == $calculatedSha) {
 				return true;
