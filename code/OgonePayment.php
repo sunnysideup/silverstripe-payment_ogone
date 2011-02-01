@@ -248,22 +248,20 @@ class OgonePayment_Handler extends Controller {
 			echo '<p>' . implode(' and ', $errors) . ' not found</p>';
 			die;
 		}
-		if($payment->OrderID != $order->ID) {
-			echo '<p>Not enough variables provided.</p>';
+		if($this->payment->OrderID != $this->order->ID) {
+			echo '<p>Order does not match payment.</p>';
 			die;
 		}
 		if(isset($_REQUEST["ACCEPTANCE"])) {
 			$this->payment->ACCEPTANCE = $_REQUEST["ACCEPTANCE"];
-			$this->payment->write();
 		}
 		if(isset($_REQUEST["PM"])) {
 			$this->payment->PM = $_REQUEST["PM"];
-			$this->payment->write();
 		}
 		if(isset($_REQUEST["NCERROR"])) {
 			$this->payment->ExceptionError = $_REQUEST["NCERROR"];
-			$this->payment->write();
 		}
+		$this->payment->write();
 	}
 
 	function accept() {
