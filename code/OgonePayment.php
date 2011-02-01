@@ -4,6 +4,12 @@
  */
 class OgonePayment extends Payment {
 
+	static $db = array(
+		"PM" => "Varchar(100)",
+		"Brand" => "Varchar(255)",
+		"ACCEPTANCE" => "Varchar(255)"
+	);
+
 	// Ogone Information
 
 	protected static $payment_options_array = array();
@@ -236,13 +242,17 @@ class OgonePayment_Handler extends Controller {
 		}
 		if(! $this->order) $errors[] = 'Order';
 		if(! $this->payment) $errors[] = 'Payment';
+		//to do: make sexier error message.
 		if(isset($errors)) {
 			echo '<p>' . implode(' and ', $errors) . ' not found</p>';
 			die;
 		}
-		if(!$this->checkShaOut()) {
+		if(isset($_REQUEST["ACCEPTANCE"])) {
+			$this->payment->ACCEPTANCE = $_REQUEST["ACCEPTANCE"];
 		}
-
+		if(isset($_REQUEST["PM"])) {
+			$this->payment->PM = $_REQUEST["PM"];
+		}
 	}
 
 	function accept() {
@@ -270,31 +280,28 @@ class OgonePayment_Handler extends Controller {
 	}
 
 	function decline() {
+		/*
 		$status = $_REQUEST['STATUS'];
 		if($status <= 2 || $status == 93) {
 			$this->payment->Status = 'Failure';
 			$this->payment->write();
 		}
-		$this->checkShaOut();
-		$this->payment->redirectToOrder();
+		*/
+		return $this->addErrorMessageAndRedirect(_t("OgonePayment.PAYMENTDECLINED", "Payment declined."));
 	}
 
 	function exception() {
-		$msg = _t("OgonePayment.PAYMENTERROR", "Payment error.");
-		$this->payment->Status = "Failure";
-		$this->payment->ExceptionError = $msg
-		$this->payment->Message = $msg;
-		$this->payment->write();
-		$this->payment->redirectToOrder();
+		return $this->addErrorMessageAndRedirect(_t("OgonePayment.PAYMENTERROR", "Payment error."));
 	}
-	function back() {
-		$this->payment->redirectToOrder();
-	}
+
 
 	function cancel() {
-		$this->payment->redirectToOrder();
+		return $this->addErrorMessageAndRedirect(_t("OgonePayment.PAYMENTCANCELLED", "Payment cancelled by customer."));
 	}
 
+	function back() {
+		return $this->cancel();
+	}
 
 	protected function checkShaOut() {
 		if(isset($_REQUEST["SHASIGN"])) {
@@ -311,9 +318,21 @@ class OgonePayment_Handler extends Controller {
 				return true;
 			}
 		}
-		$msg = _t("OgonePayment.SECURITYERROR", "Security Error");
-		$this->payment->Status = "Failure";
-		$this->payment->ExceptionError = $msg
-		$this->payment->Message = $msg;
-		$this->payment->write();
+		$this->addErrorMessageAndRedirect(_t("OgonePayment.SECURITYERROR", "Security Error"));
 	}
+
+	protected function addErrorMessageAndRedirect($msg) {
+		if($this->payment instanceOf Payment) {
+			$this->payment->Status = "Failure";
+			$this->payment->ExceptionError = $msg;
+			$this->payment->Message = $msg;
+			$this->payment->write();
+			$this->payment->redirectToOrder();
+			return;
+		}
+		return array();
+	}
+
+
+}
+
