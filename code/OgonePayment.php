@@ -322,10 +322,7 @@ class OgonePayment_Handler extends Controller {
 			$presentSha = $_REQUEST["SHASIGN"];
 			ksort($_REQUEST);
 			foreach($_REQUEST as $key => $value) {
-				$shouldBeShaInput = '';
-				if(in_array($key, array('ACCEPTANCE', 'AMOUNT','BRAND','CARDNO','CURRENCY','NCERROR','ORDERID','PAYID','PM','STATUS'))) {
-					$shouldBeShaInput = strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
-				}
+				$shouldBeShaInput = strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
 			}
 			$shouldBeSha = sha1($shouldBeShaInput);
 			if($presentSha == $shouldBeSha) {
