@@ -112,6 +112,7 @@ class OgonePayment extends Payment {
 	}
 
 	function OgoneForm() {
+		Requirements::clear();
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
 		Requirements::themedCSS("OgonePaymentSubmitForm");
 
@@ -163,7 +164,7 @@ class OgonePayment extends Payment {
 			$shaInputs = array_change_key_case($inputs, CASE_UPPER);
 			ksort($shaInputs);
 			foreach($shaInputs as $input => $value) {
-				if($value && $value != '') $joinInputs[] = "$input=$value";
+				if($value && $value != '') $joinInputs[] = strtoupper($input)."=$value";
 			}
 			$sha = implode(self::$sha_passphrase, $joinInputs) . self::$sha_passphrase;
 			$inputs['SHASIGN'] = sha1($sha);
@@ -249,9 +250,15 @@ class OgonePayment_Handler extends Controller {
 		}
 		if(isset($_REQUEST["ACCEPTANCE"])) {
 			$this->payment->ACCEPTANCE = $_REQUEST["ACCEPTANCE"];
+			$this->payment->write();
 		}
 		if(isset($_REQUEST["PM"])) {
 			$this->payment->PM = $_REQUEST["PM"];
+			$this->payment->write();
+		}
+		if(isset($_REQUEST["NCERROR"])) {
+			$this->payment->ExceptionError = $_REQUEST["NCERROR"];
+			$this->payment->write();
 		}
 	}
 
@@ -310,7 +317,7 @@ class OgonePayment_Handler extends Controller {
 			foreach($_REQUEST as $key => $value) {
 				$shouldBeShaInput = '';
 				if(in_array($key, array('ACCEPTANCE', 'AMOUNT','BRAND','CARDNO','CURRENCY','NCERROR','ORDERID','PAYID','PM','STATUS'))) {
-					$shouldBeShaInput = $key.'='.$value.OgonePayment::get_sha_passphrase();
+					$shouldBeShaInput = strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
 				}
 			}
 			$shouldBeSha = sha1($shouldBeShaInput);
