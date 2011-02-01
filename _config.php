@@ -16,7 +16,7 @@ Director::addRules(50, array(
 //OgonePayment::set_sha_passphrase("hello");
 
 //HIGLY RECOMMENDED TO SET
-//OgonePayment::set_logos_to_show_array(array("visa", "mastercard", "maestro", "ideal", "paypal"));
+//OgonePayment::set_logos_to_show_array(array("visa", "master-card", "maestro", "iDeal", "paypal"); // may also be an associative array with code and filename , e.g. "visa" => "mysite/images/MyVisaLogo.gif"
 //OgonePayment::set_payment_options_array(array('CredtiCard' => 'Credit Card','iDeal' => 'iDeal','PayPal' => 'Paypal'));
 	//OgonePayment::add_payment_option($key, $title);
 	//OgonePayment::remove_payment_option($key) ;
