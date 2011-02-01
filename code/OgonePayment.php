@@ -38,6 +38,7 @@ class OgonePayment extends Payment {
 
 	protected static $sha_passphrase;
 		static function set_sha_passphrase($sha_passphrase) {self::$sha_passphrase = $sha_passphrase;}
+		static function get_sha_passphrase() {return self::$sha_passphrase;}
 
 	// Ogone Pages Style Optional Informations
 
@@ -130,10 +131,10 @@ class OgonePayment extends Payment {
 		$inputs['OWNERTOWN'] = $member->City;
 		$inputs['OWNERCTY'] = $member->Country;
 		if($member->hasMethod('getPhoneNumber')) $inputs['OWNERTELNO'] = $member->getPhoneNumber();
-
+		$inputs['PMLISTTYPE'] = 2;
 		// 3) Redirection Informations
 
-		$redirections = array('accept', 'decline');
+		$redirections = array('accept', 'back', 'cancel','decline', 'exceptionurl');
 		foreach($redirections as $redirection) {
 			$inputs["{$redirection}url"] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
@@ -228,10 +229,10 @@ class OgonePayment_Handler extends Controller {
 	function init() {
 		parent::init();
 		if(isset($_REQUEST['order']) && $orderID = $_REQUEST['order']) {
-			$this->order = DataObject::get_by_id('Order', $orderID);
+			$this->order = DataObject::get_by_id('Order', intval($orderID));
 		}
 		if(isset($_REQUEST['payment']) && $paymentID = $_REQUEST['payment']) {
-			$this->payment = DataObject::get_by_id('OgonePayment', $paymentID);
+			$this->payment = DataObject::get_by_id('OgonePayment', intval($paymentID));
 		}
 		if(! $this->order) $errors[] = 'Order';
 		if(! $this->payment) $errors[] = 'Payment';
@@ -239,6 +240,9 @@ class OgonePayment_Handler extends Controller {
 			echo '<p>' . implode(' and ', $errors) . ' not found</p>';
 			die;
 		}
+		if(!$this->checkShaOut()) {
+		}
+
 	}
 
 	function accept() {
@@ -261,7 +265,7 @@ class OgonePayment_Handler extends Controller {
 				break;
 			}
 		}
-		$this->payment->write();
+		$this->checkShaOut();
 		$this->payment->redirectToOrder();
 	}
 
@@ -271,6 +275,45 @@ class OgonePayment_Handler extends Controller {
 			$this->payment->Status = 'Failure';
 			$this->payment->write();
 		}
+		$this->checkShaOut();
 		$this->payment->redirectToOrder();
 	}
-}
+
+	function exception() {
+		$msg = _t("OgonePayment.PAYMENTERROR", "Payment error.");
+		$this->payment->Status = "Failure";
+		$this->payment->ExceptionError = $msg
+		$this->payment->Message = $msg;
+		$this->payment->write();
+		$this->payment->redirectToOrder();
+	}
+	function back() {
+		$this->payment->redirectToOrder();
+	}
+
+	function cancel() {
+		$this->payment->redirectToOrder();
+	}
+
+
+	protected function checkShaOut() {
+		if(isset($_REQUEST["SHASIGN"])) {
+			$presentSha = $_REQUEST["SHASIGN"];
+			ksort($_REQUEST);
+			foreach($_REQUEST as $key => $value) {
+				$shouldBeShaInput = '';
+				if(in_array($key, array('ACCEPTANCE', 'AMOUNT','BRAND','CARDNO','CURRENCY','NCERROR','ORDERID','PAYID','PM','STATUS'))) {
+					$shouldBeShaInput = $key.'='.$value.OgonePayment::get_sha_passphrase();
+				}
+			}
+			$shouldBeSha = sha1($shouldBeShaInput);
+			if($presentSha == $shouldBeSha) {
+				return true;
+			}
+		}
+		$msg = _t("OgonePayment.SECURITYERROR", "Security Error");
+		$this->payment->Status = "Failure";
+		$this->payment->ExceptionError = $msg
+		$this->payment->Message = $msg;
+		$this->payment->write();
+	}
