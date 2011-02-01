@@ -23,8 +23,13 @@ class OgonePayment extends Payment {
 	protected static $privacy_link = 'http://www.ogone.com/en/About%20Ogone/Privacy%20Policy.aspx';
 		static function set_privacy_link($v) {self::$privacy_link = $v;}
 
-	protected static $logo = 'mysite/images/ogone.gif';
-		static function set_logo($v) {self::$logo = $v;}
+	/**
+	*@param $a = can be a straight list (e.g. visa, maestro) or can be associated array with image locations (e.g. "visa" => "mysite/images/MyVisaLogo.gif")
+	*
+	**/
+
+	protected static $logos_to_show_array = array("visa", "master-card", "maestro", "ideal", "paypal");
+		static function set_logos_to_show_array($a) {self::$logos_to_show_array = $a;}
 
 	// URLs
 	protected static $url = 'https://secure.ogone.com/ncol/prod/orderstandard.asp';
@@ -89,32 +94,49 @@ class OgonePayment extends Payment {
 		if(!(self::$payment_options_array) || !count(self::$payment_options_array))  {
 			user_error("no payment options have been set", E_USER_NOTICE);
 		}
-		$logo = '<img src="' . self::$logo . '" alt="Payments powered by Ogone "/>';
-		$privacyLink = '<div class="field nolabel readonly"><div class="middleColumn"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . $logo . '</a></div></div>';
-
-		return new FieldSet(
-			new LiteralField('OgoneInfo', $privacyLink),
-			new OptionsetField(
-				'OgoneMethod',
-				'',
-				self::$payment_options_array
-			)
-		);
+		$fieldSet = new FieldSet();
+		// PAYMENT OPTIONS
+		if(self::$payment_options_array) {
+			$fieldSet->push(
+				new OptionsetField('PM','Payment Method',self::$payment_options_array)
+			);
+		}
+		// LOGOS
+		$logos = '';
+		if(is_array(self::$logos_to_show_array) && count(self::$logos_to_show_array)) {
+			$logos .= '<div class="paymentOptionLogos">';
+			foreach(self::$logos_to_show_array as $key => $value) {
+				if(is_numeric($key)) {
+					$fileName = "payment_ogone/images/{$value}.png";
+					$code = $value;
+				}
+				else {
+					$fileName = $value;
+					$code = $key;
+				}
+				$logos .= '<img src="'.$fileName.'" class="'.$code.'PaymentLogo" alt="'.$code.'" />';
+			}
+			$logos .= '</div>';
+		}
+		// PRIVACY LINK
+		if(self::$privacy_link) {
+			$privacyLink = '<span class="privacyLink"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . _t("OgonePayment.PRIVACYLINK", "privacy information"). '</a></span>';
+		}
+		if($logos || $privacyLink) {
+			$paymentInfo = '<div class="field nolabel readonly"><div class="middleColumn">'.$logos.$privacyLink.'</div></div>';
+			$fieldSet->push(new LiteralField('OgonePaymentInfo', $paymentInfo));
+		}
+		return $fieldSet;
 	}
 
 	function getPaymentFormRequirements() {return null;}
 
 	function processPayment($data, $form) {
 		$page = new Page();
-
-		$page->Title = 'Redirection to Ogone...';
-		$page->Logo = '<img src="' . self::$logo . '" alt="Payments powered by Ogone" />';
+		$page->Title = _t("OgonePayment.PROCESSINGPAYMENT", "Processing Payment");
 		$page->Form = $this->OgoneForm();
-
 		$controller = new Page_Controller($page);
-
 		$form = $controller->renderWith('PaymentProcessingPage');
-
 		return new Payment_Processing($form);
 	}
 
@@ -131,7 +153,7 @@ class OgonePayment extends Payment {
 		// 2) Main Settings
 
 		$url = self::$test_mode ? self::$test_url : self::$url;
-		$inputs['PM'] = isset($_REQUEST["OgoneMethod"]) ? $_REQUEST["OgoneMethod"] : "CC";
+		$inputs['PM'] = isset($_REQUEST["PM"]) ? $_REQUEST["PM"] : "CC";
 		$inputs['PSPID'] = self::$account_pspid;
 		$inputs['ORDERID'] = $order->ID;
 		$inputs['AMOUNT'] = $order->Total() * 100;
@@ -147,10 +169,10 @@ class OgonePayment extends Payment {
 		$inputs['PMLISTTYPE'] = 2;
 		// 3) Redirection Informations
 
-		$redirections = array('accept', 'back', 'cancel','decline', 'exception');
+		$redirections = array('ACCEPT', 'BACK', 'CANCEL','DECLINE', 'EXCEPTION');
 
 		foreach($redirections as $redirection) {
-			$inputs[strtoupper("{$redirection}url")] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
+			$inputs[strtoupper("{$redirection}URL")] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
 
 		// 4) Ogone Pages Style Optional Informations
@@ -205,41 +227,17 @@ HTML;
  */
 class OgonePayment_Handler extends Controller {
 
-	static $URLSegment = 'ogone';
+	protected static $url_segment = 'ogone';
+		static function  get_url_segment(){return self::$url_segment;}
+		static function  set_url_segment($v){self::$url_segment = $v;}
 
 	static function redirect_link($action, $order, $payment) {
-		return self::$URLSegment . "/".$action."/".$order->ID."/".$payment->ID."/";
+		return self::$url_segment. "/".$action."/".$order->ID."/".$payment->ID."/";
 	}
 
 	protected $order, $payment;
 	protected $hasBeenRedirect = false;
 
-	/*
-	 * http://staging.shop.avelon.me.xplainhosting.com/ogone/accept?
-	 * order=140&
-	 * payment=19&
-	 * orderID=140&
-	 * currency=EUR&
-	 * amount=149&
-	 * PM=CreditCard&
-	 * ACCEPTANCE=test123&
-	 * STATUS=9&
-	 * CARDNO=XXXXXXXXXXXX1111&
-	 * ED=0921&
-	 * CN=Default+Admin&
-	 * TRXDATE=01%2F31%2F11&
-	 * PAYID=9296689&
-	 * NCERROR=0&
-	 * BRAND=VISA&
-	 * IPCTY=NZ&
-	 * CCCTY=US&
-	 * ECI=7&
-	 * CVCCheck=NO&
-	 * AAVCheck=NO&
-	 * VC=NO&
-	 * IP=125.237.65.47&
-	 * SHASIGN=E62DF983CDD8F2AE90CA566FDB1FF99A255969B7
-	 */
 	function init() {
 		parent::init();
 		if($orderID = intval($this->request->param('ID'))) {
@@ -325,21 +323,27 @@ class OgonePayment_Handler extends Controller {
 
 	protected function checkShaOut() {
 		if(isset($_REQUEST["SHASIGN"])) {
-			$presentSha = $_REQUEST["SHASIGN"];
+			$presentedSha = $_REQUEST["SHASIGN"];
 			ksort($_REQUEST);
-			$shouldBeShaInput = '';
+			$shaInput = '';
 			foreach($_REQUEST as $key => $value) {
 				$key = strtoupper($key);
+				$value = urldecode($value);
 				if(in_array($key, $this->shaOutVariables())) {
-					$shouldBeShaInput .= strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
+					if($key != "SHASIGN") {
+						$shaInput .= strtoupper($key).'='.$value.OgonePayment::get_sha_passphrase();
+					}
 				}
 			}
-			$shouldBeSha = sha1($shouldBeShaInput);
-			if($presentSha == $shouldBeSha) {
+			$calculatedSha = sha1($shaInput);
+			if($presentSha == $calculatedSha) {
 				return true;
 			}
+			else {
+				$this->addErrorMessage(_t("OgonePayment.SECURITYERROR", "Security phrase does not match."));
+			}
 		}
-		$this->addErrorMessage(_t("OgonePayment.SECURITYERROR", "Security Error"));
+		$this->addErrorMessage(_t("OgonePayment.SECURITYERROR", "No security phrase provided."));
 	}
 
 	protected function addErrorMessage($msg) {

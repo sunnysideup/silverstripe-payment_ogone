@@ -1,7 +1,7 @@
 <?php
 
 Director::addRules(50, array(
-	OgonePayment_Handler::$URLSegment . '//$Action/$ID/$OtherID' => 'OgonePayment_Handler'
+	OgonePayment_Handler::get_url_segment() . '//$Action/$ID/$OtherID' => 'OgonePayment_Handler'
 ));
 
 // copy to myste/_config and set as required...
@@ -11,12 +11,15 @@ Director::addRules(50, array(
 //Payment::set_supported_methods(array('OgonePayment' => 'Ogone Payment'));
 
 // MUST SET
-//OgonePayment::set_payment_options_array(array('CredtiCard' => 'Credit Card','iDeal' => 'iDeal','PayPal' => 'Paypal'));
-	//OgonePayment::add_payment_option($key, $title);
-	//OgonePayment::remove_payment_option($key) ;
 //OgonePayment::set_test_mode(false);
 //OgonePayment::set_account_pspid("myaccountcode");
 //OgonePayment::set_sha_passphrase("hello");
+
+//HIGLY RECOMMENDED TO SET
+//OgonePayment::set_logos_to_show_array(array("visa", "mastercard", "maestro", "ideal", "paypal"));
+//OgonePayment::set_payment_options_array(array('CredtiCard' => 'Credit Card','iDeal' => 'iDeal','PayPal' => 'Paypal'));
+	//OgonePayment::add_payment_option($key, $title);
+	//OgonePayment::remove_payment_option($key) ;
 
 //  FORMATTING
 //OgonePayment::set_page_title("");
@@ -33,7 +36,6 @@ Director::addRules(50, array(
 
 // UNLIKELY TO NEED CHANGING
 //OgonePayment::set_privacy_link('http://www.ogone.com/en/About%20Ogone/Privacy%20Policy.aspx');
-//OgonePayment::set_logo('mysite/images/ogone.gif');
 //OgonePayment::set_url('https://secure.ogone.com/ncol/prod/orderstandard.asp');
 //OgonePayment::set_test_url('https://secure.ogone.com/ncol/test/orderstandard.asp');
 // __________________________________ END OGONE PAYMENT MODULE CONFIG __________________________________
