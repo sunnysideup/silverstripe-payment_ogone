@@ -78,7 +78,14 @@ class OgonePayment extends Payment {
 	protected static $template;
 		static function set_template($v) {self::$template = $v;}
 
+	protected static $hide_payment_method_in_orderform = true;
+		static function set_hide_payment_method_in_orderform($v) {self::$hide_payment_method_in_orderform = $v;}
+
 	function getPaymentFormFields() {
+		$js = '';
+		if(self::$hide_payment_method_in_orderform) {
+			Requirements::customScript("jQuery('#PaymentMethod').hide(); ", "OgoneHidePaymentMethodDiv");
+		}
 		if(!(self::$payment_options_array) || !count(self::$payment_options_array))  {
 			user_error("no payment options have been set", E_USER_NOTICE);
 		}
@@ -176,7 +183,6 @@ class OgonePayment extends Payment {
 			$ATT_value = Convert::raw2att($value);
 			$fields .= "<input type=\"hidden\" name=\"$name\" value=\"$ATT_value\" />";
 		}
-
 		return <<<HTML
 			<form id="PaymentForm" method="post" action="$url">
 				<div>
@@ -357,7 +363,7 @@ class OgonePayment_Handler extends Controller {
 			'CVCCHECK', 'DCC_COMMPERCENTAGE', 'DCC_CONVAMOUNT', 'DCC_CONVCCY', 'DCC_EXCHRATE', 'DCC_EXCHRATESOURCE', 'DCC_EXCHRATETS', 'DCC_INDICATOR', 'DCC_MARGINPERCENTAGE',
 			'DCC_VALIDHOURS', 'DIGESTCARDNO', 'ECI', 'ED', 'ENCCARDNO', 'IP', 'IPCTY', 'NBREMAILUSAGE', 'NBRIPUSAGE', 'NBRIPUSAGE_ALLTX', 'NBRUSAGE', 'NCERROR', 'ORDERID',
 			'PARAMPLUS', 'PAYID', 'PM', 'SCO_CATEGORY', 'SCORING', 'STATUS', 'SUBSCRIPTION_ID', 'TRXDATE', 'VC'
-		}
+		);
 	}
 
 
