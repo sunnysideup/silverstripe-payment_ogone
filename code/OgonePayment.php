@@ -279,7 +279,9 @@ class OgonePayment_Handler extends Controller {
 				if(!isset($_REQUEST["amount"]) && isset($_REQUEST["AMOUNT"])) { $_REQUEST["amount"] = $_REQUEST["AMOUNT"];}
 				if(!isset($_REQUEST["amount"]) && isset($_REQUEST["Amount"])) { $_REQUEST["amount"] = $_REQUEST["Amount"];}
 				if(!isset($_REQUEST["amount"])) { $_REQUEST["amount"] = 0;}
-				$this->payment->Amount = DBField::create('Currency',$_REQUEST["amount"]);
+				$money = DBField::create('Money');
+				$money->setAmount($_REQUEST["amount"]);
+				$this->payment->Amount = $money;
 				$this->payment->Status = 'Success';
 				break;
 			}
