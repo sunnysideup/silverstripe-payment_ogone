@@ -336,10 +336,11 @@ class OgonePayment_Handler extends Controller {
 				}
 			}
 			$calculatedSha = sha1($shaInput);
-			if($presentSha == $calculatedSha) {
+			if($presentedSha == $calculatedSha) {
 				return true;
 			}
 			else {
+				die("check sha");
 				$this->addErrorMessage(_t("OgonePayment.SECURITYERROR", "Security phrase does not match."));
 			}
 		}
