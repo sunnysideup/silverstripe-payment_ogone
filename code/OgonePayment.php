@@ -141,10 +141,11 @@ class OgonePayment extends Payment {
 		// 3) Redirection Informations
 
 		$redirections = array('accept', 'back', 'cancel','decline', 'exceptionurl');
+		/*
 		foreach($redirections as $redirection) {
-			$inputs["{$redirection}url"] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
+			$inputs[strtoupper("{$redirection}url")] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
-
+		*/
 		// 4) Ogone Pages Style Optional Informations
 
 		if(self::$page_title) $inputs['TITLE'] = self::$page_title;
@@ -163,7 +164,7 @@ class OgonePayment extends Payment {
 			$shaInputs = array_change_key_case($inputs, CASE_UPPER);
 			ksort($shaInputs);
 			foreach($shaInputs as $input => $value) {
-				if($value && $value != '') $joinInputs[] = strtoupper($input)."=$value";
+				$joinInputs[] = strtoupper($input)."=$value";
 			}
 			$sha = implode(self::$sha_passphrase, $joinInputs) . self::$sha_passphrase;
 			$inputs['SHASIGN'] = sha1($sha);
@@ -201,7 +202,7 @@ class OgonePayment_Handler extends Controller {
 	static $URLSegment = 'ogone';
 
 	static function redirect_link($action, $order, $payment) {
-		return self::$URLSegment . "/$action?order=$order->ID&payment=$payment->ID";
+		return self::$URLSegment . "/".$action."?order=$order->ID&payment=$payment->ID";
 	}
 
 	protected $order, $payment;
