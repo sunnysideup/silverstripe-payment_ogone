@@ -6,61 +6,85 @@ class OgonePayment extends Payment {
 
 	// Ogone Information
 
+	protected static $payment_options_array = array();
+		static function set_payment_options_array($a) {self::$payment_options_array = $a;}
+		static function add_payment_option($key, $title) {self::$payment_options_array[$key] = $title;}
+		static function remove_payment_option($key) {unset(self::$payment_options_array[$key]);}
+
+
+	// Ogone Information
+
 	protected static $privacy_link = 'http://www.ogone.com/en/About%20Ogone/Privacy%20Policy.aspx';
+		static function set_privacy_link($v) {self::$privacy_link = $v;}
+
 	protected static $logo = 'mysite/images/ogone.gif';
+		static function set_logo($v) {self::$logo = $v;}
 
 	// URLs
-
 	protected static $url = 'https://secure.ogone.com/ncol/prod/orderstandard.asp';
-	protected static $test_url = 'https://secure.ogone.com/ncol/test/orderstandard.asp';
+		static function set_url($v) {self::$url = $v;}
 
+	protected static $test_url = 'https://secure.ogone.com/ncol/test/orderstandard.asp';
+		static function set_test_url($v) {self::$test_url = $v;}
 	// Test Mode
 
 	protected static $test_mode = false;
-	static function set_test_mode($test_mode) {self::$test_mode = $test_mode;}
+		static function set_test_mode($test_mode) {self::$test_mode = $test_mode;}
 
-	// Payment Informations
+	// Payment Information
 
 	protected static $account_pspid;
-	static function set_account_pspid($account_pspid) {self::$account_pspid = $account_pspid;}
+		static function set_account_pspid($account_pspid) {self::$account_pspid = $account_pspid;}
 
 	protected static $sha_passphrase;
-	static function set_sha_passphrase($sha_passphrase) {self::$sha_passphrase = $sha_passphrase;}
+		static function set_sha_passphrase($sha_passphrase) {self::$sha_passphrase = $sha_passphrase;}
 
 	// Ogone Pages Style Optional Informations
 
 	protected static $page_title;
-	static function set_page_title($page_title) {self::$page_title = $page_title;}
+		static function set_page_title($page_title) {self::$page_title = $page_title;}
 
 	protected static $back_color;
-	static function set_back_color($back_color) {self::$back_color = $back_color;}
+		static function set_back_color($back_color) {self::$back_color = $back_color;}
 
 	protected static $text_color;
-	static function set_text_color($text_color) {self::$text_color = $text_color;}
+		static function set_text_color($text_color) {self::$text_color = $text_color;}
 
 	protected static $table_back_color;
-	static function set_table_back_color($table_back_color) {self::$table_back_color = $table_back_color;}
+		static function set_table_back_color($table_back_color) {self::$table_back_color = $table_back_color;}
 
 	protected static $table_text_color;
-	static function set_table_text_color($table_text_color) {self::$table_text_color = $table_text_color;}
+		static function set_table_text_color($table_text_color) {self::$table_text_color = $table_text_color;}
 
 	protected static $button_back_color;
-	static function set_button_back_color($button_back_color) {self::$button_back_color = $button_back_color;}
+		static function set_button_back_color($button_back_color) {self::$button_back_color = $button_back_color;}
 
 	protected static $button_text_color;
-	static function set_button_text_color($button_text_color) {self::$button_text_color = $button_text_color;}
+		static function set_button_text_color($button_text_color) {self::$button_text_color = $button_text_color;}
 
 	protected static $font_type;
-	static function set_font_type($font_type) {self::$font_type = $font_type;}
+		static function set_font_type($font_type) {self::$font_type = $font_type;}
 
 	protected static $image_url;
-	static function set_image_url($image_url) {self::$image_url = $image_url;}
+		static function set_image_url($image_url) {self::$image_url = $image_url;}
+
+	protected static $template;
+		static function set_template($v) {self::$template = $v;}
 
 	function getPaymentFormFields() {
-		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone "/>';
+		if(!(self::$payment_options_array) || !count(self::$payment_options_array))  {
+			user_error("no payment options have been set", E_USER_NOTICE);
+		}
+		$logo = '<img src="' . self::$logo . '" alt="Payments powered by Ogone "/>';
 		$privacyLink = '<div class="field nolabel readonly"><div class="middleColumn"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . $logo . '</a></div></div>';
+
 		return new FieldSet(
-			new LiteralField('OgoneInfo', $privacyLink)
+			new LiteralField('OgoneInfo', $privacyLink),
+			new OptionsetField(
+				'OgoneMethod',
+				'',
+				self::$payment_options_array
+			)
 		);
 	}
 
@@ -70,7 +94,7 @@ class OgonePayment extends Payment {
 		$page = new Page();
 
 		$page->Title = 'Redirection to Ogone...';
-		$page->Logo = '<img src="' . self::$logo . '" alt="Payments powered by Ogone"/>';
+		$page->Logo = '<img src="' . self::$logo . '" alt="Payments powered by Ogone" />';
 		$page->Form = $this->OgoneForm();
 
 		$controller = new Page_Controller($page);
@@ -82,6 +106,7 @@ class OgonePayment extends Payment {
 
 	function OgoneForm() {
 		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+		Requirements::themedCSS("OgonePaymentSubmitForm");
 
 		// 1) Main Informations
 
@@ -92,6 +117,7 @@ class OgonePayment extends Payment {
 		// 2) Main Settings
 
 		$url = self::$test_mode ? self::$test_url : self::$url;
+		$inputs['PM'] = isset($_REQUEST["OgoneMethod"]) ? $_REQUEST["OgoneMethod"] : "CC";
 		$inputs['PSPID'] = self::$account_pspid;
 		$inputs['ORDERID'] = $order->ID;
 		$inputs['AMOUNT'] = $order->Total() * 100;
@@ -140,7 +166,7 @@ class OgonePayment extends Payment {
 
 		foreach($inputs as $name => $value) {
 			$ATT_value = Convert::raw2att($value);
-			$fields .= "<input type=\"hidden\" name=\"$name\" value=\"$ATT_value\"/>";
+			$fields .= "<input type=\"hidden\" name=\"$name\" value=\"$ATT_value\" />";
 		}
 
 		return <<<HTML
@@ -152,7 +178,7 @@ class OgonePayment extends Payment {
 			</form>
 			<script type="text/javascript">
 				jQuery(document).ready(function() {
-					//jQuery("input[type='submit']").hide();
+					jQuery("input[type='submit']").hide();
 					jQuery('#PaymentForm').submit();
 				});
 			</script>
@@ -217,6 +243,7 @@ class OgonePayment_Handler extends Controller {
 
 	function accept() {
 		$status = $_REQUEST['STATUS'];
+		//CHECK for SHA-OUT!!!
 		switch($status) {
 			case 5 :
 			case 9 : {
