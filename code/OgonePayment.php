@@ -58,7 +58,7 @@ class OgonePayment extends Payment {
 
 	function getPaymentFormFields() {
 		$logo = '<img src="' . self::$logo . '" alt="Credit card payments powered by Ogone "/>';
-		$privacyLink = '<div class="middleColumn"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . $logo . '</a></div>';
+		$privacyLink = '<div class="field nolabel readonly"><div class="middleColumn"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . $logo . '</a></div></div>';
 		return new FieldSet(
 			new LiteralField('OgoneInfo', $privacyLink)
 		);
