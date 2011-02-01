@@ -1,7 +1,7 @@
 <?php
 
 Director::addRules(50, array(
-	OgonePayment_Handler::$URLSegment . '/$Action/$ID' => 'OgonePayment_Handler'
+	OgonePayment_Handler::$URLSegment . '//$Action/$ID/$OtherID' => 'OgonePayment_Handler'
 ));
 
 // copy to myste/_config and set as required...

@@ -140,12 +140,12 @@ class OgonePayment extends Payment {
 		$inputs['PMLISTTYPE'] = 2;
 		// 3) Redirection Informations
 
-		$redirections = array('accept', 'back', 'cancel','decline', 'exceptionurl');
-		/*
+		$redirections = array('accept', 'back', 'cancel','decline', 'exception');
+
 		foreach($redirections as $redirection) {
 			$inputs[strtoupper("{$redirection}url")] = Director::absoluteBaseURL() . OgonePayment_Handler::redirect_link($redirection, $order, $this);
 		}
-		*/
+
 		// 4) Ogone Pages Style Optional Informations
 
 		if(self::$page_title) $inputs['TITLE'] = self::$page_title;
@@ -202,7 +202,7 @@ class OgonePayment_Handler extends Controller {
 	static $URLSegment = 'ogone';
 
 	static function redirect_link($action, $order, $payment) {
-		return self::$URLSegment . "/".$action."?order=$order->ID&payment=$payment->ID";
+		return self::$URLSegment . "/".$action."/".$order->ID."/".$payment->ID."/";
 	}
 
 	protected $order, $payment;
@@ -235,17 +235,21 @@ class OgonePayment_Handler extends Controller {
 	 */
 	function init() {
 		parent::init();
-		if(isset($_REQUEST['order']) && $orderID = $_REQUEST['order']) {
-			$this->order = DataObject::get_by_id('Order', intval($orderID));
+		if($orderID = intval($this->request->param('ID'))) {
+			$this->order = DataObject::get_by_id('Order', $orderID);
 		}
-		if(isset($_REQUEST['payment']) && $paymentID = $_REQUEST['payment']) {
-			$this->payment = DataObject::get_by_id('OgonePayment', intval($paymentID));
+		if($paymentID = intval($this->request->param('OtherID'))) {
+			$this->payment = DataObject::get_by_id('OgonePayment', $paymentID);
 		}
 		if(! $this->order) $errors[] = 'Order';
 		if(! $this->payment) $errors[] = 'Payment';
 		//to do: make sexier error message.
 		if(isset($errors)) {
 			echo '<p>' . implode(' and ', $errors) . ' not found</p>';
+			die;
+		}
+		if($payment->OrderID != $order->ID) {
+			echo '<p>Not enough variables provided.</p>';
 			die;
 		}
 		if(isset($_REQUEST["ACCEPTANCE"])) {
@@ -340,6 +344,9 @@ class OgonePayment_Handler extends Controller {
 		return array();
 	}
 
+	function test() {
+		return "ok";
+	}
 
 }
 
