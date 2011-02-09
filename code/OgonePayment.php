@@ -10,14 +10,29 @@ class OgonePayment extends Payment {
 		"ACCEPTANCE" => "Varchar(255)"
 	);
 
-	// Ogone Information
-
-	protected static $payment_options_array = array();
+	/**
+	* payment_options_array:  "Code" => "Title"
+	*/
+	protected static $payment_options_array = array('CreditCard' => 'Credit Card','iDeal' => 'iDeal','PayPal' => 'PayPal');
+		static function get_payment_options_array() {return self::$payment_options_array;}
 		static function set_payment_options_array($a) {self::$payment_options_array = $a;}
 		static function add_payment_option($key, $title) {self::$payment_options_array[$key] = $title;}
 		static function remove_payment_option($key) {unset(self::$payment_options_array[$key]);}
 
-
+	/**
+	* [paymentOptionCode] =>  array([key] => [fileName], [key] => [fileName], [key]);
+	* e.g. : "CreditCard" => array("visa", "master-card", "maestro")
+	* e.g. : "Paypal" => array("paypal" => "mysite/images/mypaypalLogo.gif")
+	*/
+	protected static $logos_array = array(
+		"CreditCard" => array("visa", "master-card", "maestro"),
+		"iDeal" => array("ideal"),
+		"PayPal" => array("paypal")
+	);
+		static function set_logos_array($a) {self::$logos_array = $a;}
+		static function remove_payment_option_from_logos_array($paymentOption) {unset(self::$logos_array[$paymentOption]);}
+		static function add_payment_option_to_logos_array($paymentOption, $paymentOptionArray) {self::$logos_array[$paymentOption] = $paymentOptionArray;}
+		static function get_logos_array() {return self::$logos_array;}
 	// Ogone Information
 
 	protected static $privacy_link = 'http://www.ogone.com/en/About%20Ogone/Privacy%20Policy.aspx';
@@ -27,9 +42,6 @@ class OgonePayment extends Payment {
 	*@param $a = can be a straight list (e.g. visa, maestro) or can be associated array with image locations (e.g. "visa" => "mysite/images/MyVisaLogo.gif")
 	*
 	**/
-
-	protected static $logos_to_show_array = array("visa", "master-card", "maestro", "iDeal", "paypal");
-		static function set_logos_to_show_array($a) {self::$logos_to_show_array = $a;}
 
 	// URLs
 	protected static $url = 'https://secure.ogone.com/ncol/prod/orderstandard.asp';
@@ -91,39 +103,36 @@ class OgonePayment extends Payment {
 		if(self::$hide_payment_method_in_orderform) {
 			Requirements::customScript("jQuery('#PaymentMethod').hide(); ", "OgoneHidePaymentMethodDiv");
 		}
-		if(!(self::$payment_options_array) || !count(self::$payment_options_array))  {
+		if(!(self::get_payment_options_array()) || !count(self::get_payment_options_array()))  {
 			user_error("no payment options have been set", E_USER_NOTICE);
 		}
 		$fieldSet = new FieldSet();
 		// PAYMENT OPTIONS
-		if(self::$payment_options_array) {
-			$fieldSet->push(
-				new OptionsetField('PM','Payment Method',self::$payment_options_array)
-			);
-		}
-		// LOGOS
-		$logos = '';
-		if(is_array(self::$logos_to_show_array) && count(self::$logos_to_show_array)) {
-			$logos .= '<div class="paymentOptionLogos">';
-			foreach(self::$logos_to_show_array as $key => $value) {
-				if(is_numeric($key)) {
-					$fileName = "payment_ogone/images/{$value}.png";
-					$code = $value;
+		$logosArray = self::get_logos_array();
+		$paymentOptions = self::get_payment_options_array();
+		if(is_array($logosArray) && count($logosArray) && is_array($paymentOptions) && count($paymentOptions)) {
+			foreach($paymentOptions as $key => $Title) {
+				if(isset($logosArray[$key]) && count($logosArray[$key])) {
+					foreach($logosArray[$key] as $innerKey => $value) {
+						if(is_numeric($innerKey)) {
+							$fileName = "/payment_ogone/images/{$value}.png";
+						}
+						else {
+							$fileName = $value;
+						}
+						$logosArray[$key][$innerKey] = '<img src="'.$fileName.'" alt="'.$innerKey.'" class="logoFor'.$innerKey.'" />';
+					}
+					$paymentOptions[$key] = ' <span class="ogonePaymentLogos" id="paymentLogosFor'.$key.'">'.implode("",$logosArray[$key]).'</span>';
 				}
-				else {
-					$fileName = $value;
-					$code = $key;
-				}
-				$logos .= '<img src="'.$fileName.'" class="'.$code.'PaymentLogo" alt="'.$code.'" />';
 			}
-			$logos .= '</div>';
+			$fieldSet->push(
+				new OptionsetField('PM','Payment Method',$paymentOptions)
+			);
 		}
 		// PRIVACY LINK
 		if(self::$privacy_link) {
 			$privacyLink = '<span class="privacyLink"><a href="' . self::$privacy_link . '" rel="external" title="Read Ogone\'s privacy policy">' . _t("OgonePayment.PRIVACYLINK", "privacy information"). '</a></span>';
-		}
-		if($logos || $privacyLink) {
-			$paymentInfo = '<div class="field nolabel readonly"><div class="middleColumn">'.$logos.$privacyLink.'</div></div>';
+			$paymentInfo = '<div class="field nolabel readonly"><div class="middleColumn">'.$privacyLink.'</div></div>';
 			$fieldSet->push(new LiteralField('OgonePaymentInfo', $paymentInfo));
 		}
 		return $fieldSet;
