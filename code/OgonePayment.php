@@ -26,7 +26,7 @@ class OgonePayment extends Payment {
 	*/
 	protected static $logos_array = array(
 		"CreditCard" => array("visa", "master-card", "maestro"),
-		"iDeal" => array("ideal"),
+		"iDeal" => array("iDeal"),
 		"PayPal" => array("paypal")
 	);
 		static function set_logos_array($a) {self::$logos_array = $a;}
