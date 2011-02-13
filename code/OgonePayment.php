@@ -326,6 +326,16 @@ class OgonePayment_Handler extends Controller {
 		$this->payment->redirectToOrder();
 	}
 
+	function unconfirmed() {
+		return $this->addErrorMessage(_t("OgonePayment.PAYMENTUNCONFIRMED", "Payment is not confirmed."));
+		$this->payment->redirectToOrder();
+	}
+
+	function statusupdate() {
+		return $this->addErrorMessage(_t("OgonePayment.STATUSUPDATEDOFFLINE", "Payment status is updated offline."));
+		$this->payment->redirectToOrder();
+	}
+
 
 	function cancel() {
 		return $this->addErrorMessage(_t("OgonePayment.PAYMENTCANCELLED", "Payment cancelled by customer."));

@@ -11,9 +11,16 @@ Director::addRules(50, array(
 //Payment::set_supported_methods(array('OgonePayment' => 'Ogone Payment'));
 
 // MUST SET
-//OgonePayment::set_test_mode(false);
+//if(Director::isLive()) {
+	//OgonePayment::set_test_mode(false);
+	//OgonePayment::set_sha_passphrase("hello");
+//}
+//else {
+	//OgonePayment::set_test_mode(true);
+	//OgonePayment::set_sha_passphrase("hello");
+//}
 //OgonePayment::set_account_pspid("myaccountcode");
-//OgonePayment::set_sha_passphrase("hello");
+
 
 //HIGLY RECOMMENDED TO SET
 //OgonePayment::set_logos_to_show_array(array("visa", "master-card", "maestro", "iDeal", "paypal"); // may also be an associative array with code and filename , e.g. "visa" => "mysite/images/MyVisaLogo.gif"
