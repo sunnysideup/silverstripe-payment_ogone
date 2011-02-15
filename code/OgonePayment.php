@@ -101,7 +101,7 @@ class OgonePayment extends Payment {
 	function getPaymentFormFields() {
 		$js = '';
 		if(self::$hide_payment_method_in_orderform) {
-			Requirements::customScript("jQuery('#PaymentMethod').hide(); ", "OgoneHidePaymentMethodDiv");
+			Requirements::customScript("if(jQuery('#PaymentMethod ul li').length < 2) {jQuery('#PaymentMethod').hide(); }", "OgoneHidePaymentMethodDiv");
 		}
 		if(!(self::get_payment_options_array()) || !count(self::get_payment_options_array()))  {
 			user_error("no payment options have been set", E_USER_NOTICE);
