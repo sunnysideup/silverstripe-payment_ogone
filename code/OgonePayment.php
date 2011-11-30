@@ -165,7 +165,7 @@ class OgonePayment extends Payment {
 		$inputs['PM'] = isset($_REQUEST["PM"]) ? $_REQUEST["PM"] : "CC";
 		$inputs['PSPID'] = self::$account_pspid;
 		$inputs['ORDERID'] = $order->ID;
-		$inputs['AMOUNT'] = $order->Total() * 100;
+		$inputs['AMOUNT'] = $order->TotalOutstanding() * 100;
 		$inputs['CURRENCY'] = self::$site_currency;
 		$inputs['LANGUAGE'] = i18n::get_locale();
 		$inputs['CN'] = $member->getName();
