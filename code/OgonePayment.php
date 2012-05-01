@@ -150,7 +150,9 @@ class OgonePayment extends Payment {
 	}
 
 	function OgoneForm() {
-		Requirements::javascript(THIRDPARTY_DIR . '/jquery/jquery.js');
+		Requirements::javascript(THIRDPARTY_DIR."/jquery/jquery.js");
+		//Requirements::block(THIRDPARTY_DIR."/jquery/jquery.js");
+		//Requirements::javascript(Director::protocol()."ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js");
 		Requirements::themedCSS("OgonePaymentSubmitForm");
 
 		// 1) Main Informations
