@@ -112,6 +112,9 @@ class OgonePayment extends Payment {
 		$paymentOptions = self::get_payment_options_array();
 		if(is_array($logosArray) && count($logosArray) && is_array($paymentOptions) && count($paymentOptions)) {
 			foreach($paymentOptions as $key => $Title) {
+				if(!isset($firstKey)) {
+					$firstKey = $key;
+				}
 				if(isset($logosArray[$key]) && count($logosArray[$key])) {
 					foreach($logosArray[$key] as $innerKey => $value) {
 						if(is_numeric($innerKey)) {
@@ -126,7 +129,7 @@ class OgonePayment extends Payment {
 				}
 			}
 			$fieldSet->push(
-				new OptionsetField('PM','Payment Method',$paymentOptions)
+				new OptionsetField('PM','Payment Method',$paymentOptions, $firstKey)
 			);
 		}
 		// PRIVACY LINK
