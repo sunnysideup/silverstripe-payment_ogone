@@ -1,5 +1,5 @@
 {
-	"name": "silverstripe/payment_ogone",
+	"name": "sunnysideup/payment_ogone",
 	"type": "silverstripe-module",
 	"description": "add the ogone payment to your silverstripe e-commerce application",
 	"homepage": "http://www.silverstripe-ecommerce.com",
