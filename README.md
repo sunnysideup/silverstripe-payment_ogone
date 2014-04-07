@@ -1,7 +1,6 @@
-###############################################
+
 Instore Payment
-Pre 0.1 proof of concept
-###############################################
+================================================================================
 
 Adds the Ogone Payment option (european payment gateway)
 to the e-commerce application.
