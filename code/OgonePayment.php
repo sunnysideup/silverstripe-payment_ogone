@@ -149,7 +149,7 @@ class OgonePayment extends Payment {
 		$page->Form = $this->OgoneForm();
 		$controller = new Page_Controller($page);
 		$form = $controller->renderWith('PaymentProcessingPage');
-		return new Payment_Processing($form);
+		return EcommercePayment_Processing::create($form);
 	}
 
 	function OgoneForm() {
