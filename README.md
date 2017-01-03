@@ -1,48 +1,72 @@
+# Silverstripe payment ogone module
+[![Build Status](https://travis-ci.org/sunnysideup/silverstripe-payment_ogone.svg?branch=master)](https://travis-ci.org/sunnysideup/silverstripe-payment_ogone)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-payment_ogone/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-payment_ogone/?branch=master)
+[![codecov.io](https://codecov.io/github/sunnysideup/silverstripe-payment_ogone/coverage.svg?branch=master)](https://codecov.io/github/sunnysideup/silverstripe-payment_ogone?branch=master)
+![helpfulrobot](https://helpfulrobot.io/sunnysideup/payment_ogone/badge)
 
-Instore Payment
-================================================================================
-
-Adds the Ogone Payment option (european payment gateway)
-to the e-commerce application.
-
-Developers
------------------------------------------------
-Nicolaas Francken [at] sunnysideup.co.nz
-
-
-Documentation
------------------------------------------------
-Please contact author for more details.
-
-Any bug reports and/or feature requests will be
-looked at
-
-We are also very happy to provide personalised support
-for this module in exchange for a small donation.
+[![Latest Stable Version](https://poser.pugx.org/sunnysideup/payment_ogone/version)](https://packagist.org/packages/sunnysideup/payment_ogone)
+[![License](https://poser.pugx.org/sunnysideup/payment_ogone/license)](https://packagist.org/packages/sunnysideup/payment_ogone)
+[![Monthly Downloads](https://poser.pugx.org/sunnysideup/payment_ogone/d/monthly)](https://packagist.org/packages/sunnysideup/payment_ogone)
 
 
-Requirements
------------------------------------------------
-see composer.json
+## Documentation
 
 
-Project Home
------------------------------------------------
-See http://code.google.com/p/silverstripe-ecommerce
 
-Demo
------------------------------------------------
-See http://www.silverstripe-ecommerce.com
+ * [Developer Docs](docs/en/INDEX.md)
+ * [User Guide](docs/en/userguide.md)
+ * [API](http://ssmods.com/apis/payment_ogone/docs/en/api/)
 
-
-Installation Instructions
------------------------------------------------
-
-1. Find out how to add modules to SS and add module as per usual.
-
-2. Review configs and add entries to mysite/_config/config.yml
-(or similar) as necessary.
-In the _config/ folder of this module
-you can usually find some examples of config options (if any).
+## Requirements
 
 
+
+see [composer.json](composer.json) for details
+
+### Suggested Modules
+
+
+
+see [composer.json](composer.json) for details
+
+
+## Installation
+
+
+```
+composer require sunnysideup/payment_ogone
+```
+
+### Configuration
+
+
+
+In the `_config` folder you will find the `payment_ogone.yml.example`
+file that shows options for the configuration of this module.
+
+We recommend that you:
+
+  1. copy these `payment_ogone.yml.example` files into your
+`mysite/_config` folder
+  2. remove the .example extension
+  3. delete the lines you not care about, and
+  4. adjust the configurations that you would like to use.
+
+
+## Contributing
+
+
+
+We welcome any contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
+## Paid assistance
+
+
+
+You can pay us to create an improved / adapted version of this module for your own projects.  Please contact us if you like to find out more: [www.sunnysideup.co.nz](http://www.sunnysideup.co.nz)
+
+## Author
+
+
+
+Sunny Side Up Ltd.
